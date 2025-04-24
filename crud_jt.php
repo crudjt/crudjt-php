@@ -1,16 +1,19 @@
 <?php
 
 require_once __DIR__ . '/vendor/autoload.php';
+require_once 'cache.php';
 
 // declare(strict_types=1);
 
 use MessagePack\Packer;
+// use Closure;
 // use FFI;
 
 final class CRUD_JT
 {
     private static ?FFI $ffi = null;
     private static ?Packer $packer = null;
+    private static ?Cache $cache = null;
 
     private static function init(): void
     {
@@ -28,6 +31,10 @@ final class CRUD_JT
         if (self::$packer === null) {
             self::$packer = new Packer();
         }
+
+        // $ffi = self::$ffi; // <-- локальна змінна
+        // self::$cache = new Cache(fn($value) => $ffi->__read($value));
+        self::$cache = new Cache(fn($token) => self::$ffi->__read($token));
     }
 
     private static function ensureInit(): void
@@ -54,6 +61,8 @@ final class CRUD_JT
 
         $result = self::$ffi->__create($buffer, strlen($packed), $asdf, $qwerty);
 
+        self::$cache->insert($result, $hash, $asdf, $qwerty);
+
         return $result;
     }
 
@@ -61,12 +70,20 @@ final class CRUD_JT
     {
         self::ensureInit();
 
+        $output = self::$cache->get($value);
+        if ($output !== null) {
+            return $output;
+        }
+
         $result = self::$ffi->__read($value);
         if ($result === null || $result === '') {
             return null;
         }
 
-        return json_decode($result, true);
+        $parsed_result = json_decode($result, true);
+        self::$cache.forceInsert($value, $parsed_result);
+
+        return $parsed_result;
     }
 
     public static function update(string $value, array $hash, int $asdf = -1, int $qwerty = -1): bool
@@ -78,12 +95,19 @@ final class CRUD_JT
         $buffer = FFI::new("char[" . strlen($packed) . "]");
         FFI::memcpy($buffer, $packed, strlen($packed));
 
-        return self::$ffi->__update($value, $buffer, strlen($packed), $asdf, $qwerty);
+        $was_updated = self::$ffi->__update($value, $buffer, strlen($packed), $asdf, $qwerty);
+        if ($was_updated) {
+          self::$cache->insert($value, $hash, $asdf, $qwerty);
+        }
+
+        return $was_updated;
     }
 
     public static function delete(string $value): bool
     {
         self::ensureInit();
+
+        self::$cache->delete($value);
 
         return self::$ffi->__delete($value);
     }
