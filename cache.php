@@ -1,95 +1,83 @@
 <?php
 
+require_once 'lru_cache.php';
+
 class Cache
 {
     private const CACHE_CAPACITY = 40_000;
 
-    private array $cache = [];
+    private LRUCache $cache;
     private $wFunc;
 
     public function __construct(callable $wFunc)
     {
+        $this->cache = new LRUCache(self::CACHE_CAPACITY);
         $this->wFunc = $wFunc;
     }
 
-    public function get($value)
+    public function get(string $token): ?array
     {
-        if (!isset($this->cache[$value])) {
+        $cachedtoken = $this->cache->get($token);
+
+        if ($cachedtoken === null) {
             return null;
         }
 
-        $cachedValue = $this->cache[$value];
-        $this->cache[$value] = $cachedValue; // touch for LRU
+        // "Touch" the token again to refresh position
+        $this->cache->put($token, $cachedtoken);
 
         $output = [];
 
-        if (isset($cachedValue['metadata']['ttl'])) {
-            $ttl = ceil($cachedValue['metadata']['ttl'] - time());
+        if (isset($cachedtoken['metadata']['ttl'])) {
+            $ttl = (int)$cachedtoken['metadata']['ttl'] - time();
             if ($ttl <= 0) {
-                unset($this->cache[$value]);
+                $this->cache->del($token);
                 return null;
             }
 
-            $output['metadata'] = [
-                'ttl' => $ttl,
-            ];
+            $output['metadata']['ttl'] = $ttl;
         }
 
-        if (isset($cachedValue['metadata']['silence_read'])) {
-            $cachedValue['metadata']['silence_read'] -= 1;
-            $silence_read = $cachedValue['metadata']['silence_read'];
-
-            $output['metadata'] = $output['metadata'] ?? [];
+        if (isset($cachedtoken['metadata']['silence_read'])) {
+            $silence_read = --$cachedtoken['metadata']['silence_read'];
             $output['metadata']['silence_read'] = $silence_read;
 
-            $this->cache[$value] = $cachedValue;
-
             if ($silence_read <= 0) {
-                unset($this->cache[$value]);
+                $this->cache->del($token);
+            } else {
+                $cachedtoken['metadata']['silence_read'] = $silence_read;
+                $this->cache->put($token, $cachedtoken);
             }
 
-            call_user_func($this->wFunc, $value);
+            ($this->wFunc)($token);
         }
 
-        $output['data'] = $cachedValue['data'];
-
+        $output['data'] = $cachedtoken['data'] ?? null;
         return $output;
     }
 
-    public function insert($key, $value, int $ttl, int $silence_read)
+    public function insert(string $key, $token, int $ttl, int $silence_read): void
     {
-        $hash = ['data' => $value];
+        $hash = ['data' => $token];
 
         if ($ttl > 0) {
-            $hash['metadata'] = [
-                'ttl' => time() + $ttl,
-            ];
+            $hash['metadata']['ttl'] = time() + $ttl;
         }
 
         if ($silence_read > 0) {
-            $hash['metadata'] = $hash['metadata'] ?? [];
             $hash['metadata']['silence_read'] = $silence_read;
         }
 
-        $this->set($key, $hash);
+        $this->cache->put($key, $hash);
     }
 
-    public function forceInsert($key, $hash)
+    public function forceInsert(string $key, array $hash): void
     {
-        $this->set($key, $hash);
+        $this->cache->put($key, $hash);
     }
 
-    public function delete($value)
+    public function delete(string $key): void
     {
-        unset($this->cache[$value]);
-    }
-
-    private function set($key, $value)
-    {
-        if (count($this->cache) >= self::CACHE_CAPACITY) {
-            array_shift($this->cache); // remove oldest (approximate LRU)
-        }
-
-        $this->cache[$key] = $value;
+        $this->cache->del($key);
     }
 }

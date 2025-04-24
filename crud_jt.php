@@ -81,7 +81,7 @@ final class CRUD_JT
         }
 
         $parsed_result = json_decode($result, true);
-        self::$cache.forceInsert($value, $parsed_result);
+        self::$cache->forceInsert($value, $parsed_result);
 
         return $parsed_result;
     }
