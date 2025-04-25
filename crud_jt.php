@@ -25,7 +25,7 @@ final class CRUD_JT
                 const char* __read(const char* value);
                 bool __update(const char* value, const char* buffer, size_t size, int asdf, int qwerty);
                 bool __delete(const char* value);
-            ", __DIR__ . '/store_jt_x86_64.dylib'); // <--- заміни на свій шлях до dylib
+            ", self::resolveLibraryPath()); // <--- заміни на свій шлях до dylib
         }
 
         if (self::$packer === null) {
@@ -111,4 +111,51 @@ final class CRUD_JT
 
         return self::$ffi->__delete($value);
     }
+
+    private static function resolveLibraryPath(): string
+    {
+        $os = PHP_OS_FAMILY;
+        $arch = php_uname('m');
+
+        $osMap = [
+            'Windows' => 'windows',
+            'Darwin'  => 'macos',
+            'Linux'   => 'linux',
+        ];
+
+        $archMap = [
+            'x86_64' => 'x86_64',
+            'aarch64' => 'arm64',
+            'arm64' => 'arm64',
+        ];
+
+        if (!isset($osMap[$os])) {
+            throw new \Exception("Unsupported OS: $os");
+        }
+        if (!isset($archMap[$arch])) {
+            throw new \Exception("Unsupported architecture: $arch");
+        }
+
+        $osName = $osMap[$os];
+        $archName = $archMap[$arch];
+
+        if ($osName === 'windows') {
+            $ext = 'dll';
+        } elseif ($osName === 'linux') {
+            $ext = 'so';
+        } elseif ($osName === 'macos') {
+            $ext = 'dylib';
+        } else {
+            throw new \Exception("Unknown OS extension for $osName");
+        }
+
+        $path = __DIR__ . "/native/{$osName}/store_jt_{$archName}.{$ext}";
+
+        if (!file_exists($path)) {
+            throw new \Exception("FFI library not found at: $path");
+        }
+
+        return $path;
+    }
+
 }
