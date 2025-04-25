@@ -2,18 +2,23 @@
 
 require_once __DIR__ . '/vendor/autoload.php';
 require_once 'cache.php';
+require_once 'validation.php';
 
 // declare(strict_types=1);
 
 use MessagePack\Packer;
+
 // use Closure;
 // use FFI;
 
 final class CRUD_JT
 {
+    // use Validation;
+
     private static ?FFI $ffi = null;
     private static ?Packer $packer = null;
     private static ?Cache $cache = null;
+    private static ?Validation $validation = null;
 
     private static function init(): void
     {
@@ -21,9 +26,9 @@ final class CRUD_JT
             self::$ffi = FFI::cdef("
                 void encrypted_key(const char*);
 
-                const char* __create(const char* buffer, size_t size, int asdf, int qwerty);
+                const char* __create(const char* buffer, size_t size, int ttl, int silence_read);
                 const char* __read(const char* value);
-                bool __update(const char* value, const char* buffer, size_t size, int asdf, int qwerty);
+                bool __update(const char* value, const char* buffer, size_t size, int ttl, int silence_read);
                 bool __delete(const char* value);
             ", self::resolveLibraryPath()); // <--- заміни на свій шлях до dylib
         }
@@ -35,6 +40,7 @@ final class CRUD_JT
         // $ffi = self::$ffi; // <-- локальна змінна
         // self::$cache = new Cache(fn($value) => $ffi->__read($value));
         self::$cache = new Cache(fn($token) => self::$ffi->__read($token));
+        self::$validation = new Validation();
     }
 
     private static function ensureInit(): void
@@ -50,18 +56,20 @@ final class CRUD_JT
         self::$ffi->encrypted_key($token);
     }
 
-    public static function create(array $hash, int $asdf = -1, int $qwerty = -1): string
+    public static function create(array $hash, int $ttl = -1, int $silence_read = -1): string
     {
         self::ensureInit();
+
+        self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
         $packed = self::$packer->pack($hash);
 
         $buffer = FFI::new("char[" . strlen($packed) . "]");
         FFI::memcpy($buffer, $packed, strlen($packed));
 
-        $result = self::$ffi->__create($buffer, strlen($packed), $asdf, $qwerty);
+        $result = self::$ffi->__create($buffer, strlen($packed), $ttl, $silence_read);
 
-        self::$cache->insert($result, $hash, $asdf, $qwerty);
+        self::$cache->insert($result, $hash, $ttl, $silence_read);
 
         return $result;
     }
@@ -69,6 +77,8 @@ final class CRUD_JT
     public static function read(string $value): ?array
     {
         self::ensureInit();
+
+        self::$validation->validateToken($value);
 
         $output = self::$cache->get($value);
         if ($output !== null) {
@@ -86,18 +96,20 @@ final class CRUD_JT
         return $parsed_result;
     }
 
-    public static function update(string $value, array $hash, int $asdf = -1, int $qwerty = -1): bool
+    public static function update(string $value, array $hash, int $ttl = -1, int $silence_read = -1): bool
     {
         self::ensureInit();
+
+        self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
         $packed = self::$packer->pack($hash);
 
         $buffer = FFI::new("char[" . strlen($packed) . "]");
         FFI::memcpy($buffer, $packed, strlen($packed));
 
-        $was_updated = self::$ffi->__update($value, $buffer, strlen($packed), $asdf, $qwerty);
+        $was_updated = self::$ffi->__update($value, $buffer, strlen($packed), $ttl, $silence_read);
         if ($was_updated) {
-          self::$cache->insert($value, $hash, $asdf, $qwerty);
+          self::$cache->insert($value, $hash, $ttl, $silence_read);
         }
 
         return $was_updated;
@@ -106,6 +118,8 @@ final class CRUD_JT
     public static function delete(string $value): bool
     {
         self::ensureInit();
+
+        self::$validation->validateToken($value);
 
         self::$cache->delete($value);
 
