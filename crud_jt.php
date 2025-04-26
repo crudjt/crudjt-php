@@ -62,10 +62,10 @@ final class CRUD_JT
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
-        $packed = self::$packer->pack($hash);
-
-        $buffer = FFI::new("char[" . strlen($packed) . "]");
-        FFI::memcpy($buffer, $packed, strlen($packed));
+        // $packed = self::$packer->pack($hash);
+        //
+        // $buffer = FFI::new("char[" . strlen($packed) . "]");
+        // FFI::memcpy($buffer, $packed, strlen($packed));
 
         $result = "hkdIf63J7OpT0dk3p1SYpw==";
 
