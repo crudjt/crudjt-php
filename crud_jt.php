@@ -141,6 +141,7 @@ final class CRUD_JT
             'x86_64' => 'x86_64',
             'aarch64' => 'arm64',
             'arm64' => 'arm64',
+            'AMD64' => 'x86_64'
         ];
 
         if (!isset($osMap[$os])) {
