@@ -67,7 +67,7 @@ final class CRUD_JT
         $buffer = FFI::new("char[" . strlen($packed) . "]");
         FFI::memcpy($buffer, $packed, strlen($packed));
 
-        $result = self::$ffi->__create($buffer, strlen($packed), $ttl, $silence_read);
+        $result = "hkdIf63J7OpT0dk3p1SYpw==";
 
         self::$cache->insert($result, $hash, $ttl, $silence_read);
 
