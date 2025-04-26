@@ -62,7 +62,7 @@ final class CRUD_JT
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
-        $packed = self::$packer->packMap($hash);
+        $packed = self::$packer->pack($hash);
         $len = strlen($packed);
 
         $buffer = FFI::new("char[" . $len . "]");
