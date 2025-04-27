@@ -1,6 +1,6 @@
 <?php
 
-require 'vendor/autoload.php'; // якщо потрібно для MessagePack
+// require 'vendor/autoload.php'; // якщо потрібно для MessagePack
 require_once 'crud_jt.php';
 
 echo "OS: " . PHP_OS . PHP_EOL;
