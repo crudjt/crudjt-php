@@ -23,12 +23,11 @@ class Cache
             return null;
         }
 
-        return null;
-
         // "Touch" the token again to refresh position
         $this->cache->put($token, $cachedtoken);
 
         $output = [];
+        return $output;
 
         if (isset($cachedtoken['metadata']['ttl'])) {
             $ttl = (int)$cachedtoken['metadata']['ttl'] - time();
