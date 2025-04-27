@@ -6,7 +6,7 @@ require_once 'validation.php';
 
 // declare(strict_types=1);
 
-use MessagePack\Packer;
+// use MessagePack\Packer;
 
 // use Closure;
 // use FFI;
@@ -16,7 +16,7 @@ final class CRUD_JT
     // use Validation;
 
     private static ?FFI $ffi = null;
-    private static ?Packer $packer = null;
+    // private static ?Packer $packer = null;
     private static ?Cache $cache = null;
     private static ?Validation $validation = null;
 
@@ -33,9 +33,9 @@ final class CRUD_JT
             ", self::resolveLibraryPath()); // <--- заміни на свій шлях до dylib
         }
 
-        if (self::$packer === null) {
-            self::$packer = new Packer();
-        }
+        // if (self::$packer === null) {
+        //     self::$packer = new Packer();
+        // }
 
         // $ffi = self::$ffi; // <-- локальна змінна
         // self::$cache = new Cache(fn($value) => $ffi->__read($value));
@@ -45,7 +45,7 @@ final class CRUD_JT
 
     private static function ensureInit(): void
     {
-        if (self::$ffi === null || self::$packer === null) {
+        if (self::$ffi === null) {
             self::init();
         }
     }
@@ -62,7 +62,7 @@ final class CRUD_JT
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
-        $packed = self::$packer->pack($hash);
+        $packed = msgpack_pack($hash);
         $len = strlen($packed);
 
         $buffer = FFI::new("char[" . $len . "]");
@@ -103,7 +103,7 @@ final class CRUD_JT
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
-        $packed = self::$packer->pack($hash);
+        $packed = msgpack_pack($hash);
 
         $buffer = FFI::new("char[" . strlen($packed) . "]");
         FFI::memcpy($buffer, $packed, strlen($packed));
