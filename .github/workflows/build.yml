@@ -23,9 +23,12 @@ jobs:
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '7.4'
+          php-version: '8.0'
           extensions: mbstring, json, ffi, msgpack
           tools: composer
+
+      - name: Enable JIT
+        run: echo "opcache.jit=1235" >> $GITHUB_ENV
 
       - name: Install Composer dependencies
         run: composer install --no-interaction --no-progress
