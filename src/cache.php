@@ -1,5 +1,7 @@
 <?php
 
+namespace CRUD_JT;
+
 require_once 'lru_cache.php';
 
 class Cache

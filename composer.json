@@ -1,0 +1,20 @@
+{
+    "name": "exwarvlad/crud_jt",
+    "type": "library",
+    "autoload": {
+        "psr-4": {
+            "CRUD_JT\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "CRUD_JT\\Tests\\": "tests/"
+        }
+    },
+    "authors": [
+        {
+            "name": "exwarvlad"
+        }
+    ],
+    "require": {}
+}

@@ -1,7 +1,10 @@
 <?php
 
-// require 'vendor/autoload.php'; // якщо потрібно для MessagePack
-require_once 'crud_jt.php';
+namespace CRUD_JT\Tests;
+
+use CRUD_JT\CRUD_JT;
+
+require __DIR__ . '/../vendor/autoload.php';
 
 echo "OS: " . PHP_OS . PHP_EOL;
 echo "CPU: " . php_uname('m') . PHP_EOL;

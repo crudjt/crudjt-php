@@ -1,5 +1,7 @@
 <?php
 
+namespace CRUD_JT;
+
 class Validation
 {
     private const U64_MAX = 18446744073709551615;

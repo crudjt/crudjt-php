@@ -25,6 +25,10 @@ jobs:
         with:
           php-version: '8.4'
           extensions: mbstring, json, ffi, msgpack
+          tools: composer
+
+      - name: Run Composer
+        run: composer install
 
       - name: Run test
-        run: php test.php
+        run: php tests/autotest.php

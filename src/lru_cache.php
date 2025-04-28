@@ -1,5 +1,7 @@
 <?php
 
+namespace CRUD_JT;
+
 class LRUNode {
     public $key;
     public $value;

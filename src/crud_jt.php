@@ -1,15 +1,12 @@
 <?php
 
+namespace CRUD_JT;
+
+use FFI;
+
 // require_once __DIR__ . '/vendor/autoload.php';
 require_once 'cache.php';
 require_once 'validation.php';
-
-// declare(strict_types=1);
-
-// use MessagePack\Packer;
-
-// use Closure;
-// use FFI;
 
 final class CRUD_JT
 {
