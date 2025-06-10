@@ -3,8 +3,12 @@
 namespace CRUD_JT\Tests;
 
 use CRUD_JT\CRUD_JT;
+use CRUD_JT\Config;
 
 require __DIR__ . '/../vendor/autoload.php';
+
+\CRUD_JT\Config::encrypted_key("Cm7B68NWsMNNYjzMDREacmpe5sI1o0g40ZC9w1yQW3WOes7Gm59UsittLOHR2dciYiwmaYq98l3tG8h9yXVCxg==")
+  ->start();
 
 echo "OS: " . PHP_OS . PHP_EOL;
 echo "CPU: " . php_uname('m') . PHP_EOL;

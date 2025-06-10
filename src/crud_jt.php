@@ -21,8 +21,6 @@ final class CRUD_JT
     {
         if (self::$ffi === null) {
             self::$ffi = FFI::cdef("
-                void encrypted_key(const char*);
-
                 const char* __create(const char* buffer, size_t size, int ttl, int silence_read);
                 const char* __read(const char* value);
                 bool __update(const char* value, const char* buffer, size_t size, int ttl, int silence_read);
@@ -47,11 +45,11 @@ final class CRUD_JT
         }
     }
 
-    public static function encrypted_key(string $token): void
-    {
-        self::ensureInit();
-        self::$ffi->encrypted_key($token);
-    }
+    // public static function encrypted_key(string $token): void
+    // {
+    //     self::ensureInit();
+    //     self::$ffi->encrypted_key($token);
+    // }
 
     public static function create(array $hash, int $ttl = -1, int $silence_read = -1): string
     {
