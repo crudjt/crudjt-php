@@ -3,17 +3,15 @@
 namespace CRUD_JT;
 
 use FFI;
+use CRUD_JT\Errors;
 
-// require_once __DIR__ . '/vendor/autoload.php';
 require_once 'cache.php';
 require_once 'validation.php';
+require_once __DIR__ . '/Errors.php';
 
 final class CRUD_JT
 {
-    // use Validation;
-
     private static ?FFI $ffi = null;
-    // private static ?Packer $packer = null;
     private static ?Cache $cache = null;
     private static ?Validation $validation = null;
 
@@ -25,15 +23,9 @@ final class CRUD_JT
                 const char* __read(const char* value);
                 bool __update(const char* value, const char* buffer, size_t size, int ttl, int silence_read);
                 bool __delete(const char* value);
-            ", self::resolveLibraryPath()); // <--- заміни на свій шлях до dylib
+            ", self::resolveLibraryPath());
         }
 
-        // if (self::$packer === null) {
-        //     self::$packer = new Packer();
-        // }
-
-        // $ffi = self::$ffi; // <-- локальна змінна
-        // self::$cache = new Cache(fn($value) => $ffi->__read($value));
         self::$cache = new Cache(fn($token) => self::$ffi->__read($token));
         self::$validation = new Validation();
     }
@@ -45,15 +37,15 @@ final class CRUD_JT
         }
     }
 
-    // public static function encrypted_key(string $token): void
-    // {
-    //     self::ensureInit();
-    //     self::$ffi->encrypted_key($token);
-    // }
-
     public static function create(array $hash, int $ttl = -1, int $silence_read = -1): string
     {
         self::ensureInit();
+
+        if (!Config::wasStarted()) {
+            throw new \Exception(
+                Validation::errorMessage(Validation::ERROR_NOT_STARTED)
+            );
+        }
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
@@ -62,8 +54,12 @@ final class CRUD_JT
 
         $buffer = FFI::new("char[" . $len . "]");
         FFI::memcpy($buffer, $packed, $len);
+        self::$validation->validateHashBytesize($len);
 
         $result = self::$ffi->__create($buffer, $len, $ttl, $silence_read);
+        if (!$result) {
+            throw new InternalError("Something went wrong. Ups");
+        }
 
         self::$cache->insert($result, $hash, $ttl, $silence_read);
 
@@ -72,6 +68,12 @@ final class CRUD_JT
 
     public static function read(string $value): ?array
     {
+        if (!Config::wasStarted()) {
+            throw new \Exception(
+                Validation::errorMessage(Validation::ERROR_NOT_STARTED)
+            );
+        }
+
         self::ensureInit();
 
         self::$validation->validateToken($value);
@@ -81,29 +83,43 @@ final class CRUD_JT
             return $output;
         }
 
-        $result = self::$ffi->__read($value);
-        if ($result === null || $result === '') {
+        $str = self::$ffi->__read($value);
+        $result = json_decode($str, true);
+
+        if (!isset($result['ok']) || !$result['ok']) {
+            Errors::raise($result['code'], $result['error_message'] ?? "Unknown error");
+        }
+
+        if (empty($result['data'])) {
             return null;
         }
 
-        $parsed_result = json_decode($result, true);
-        self::$cache->forceInsert($value, $parsed_result);
+        $data = json_decode($result['data'], true);
+        self::$cache->forceInsert($value, $data);
 
-        return $parsed_result;
+        return $data;
     }
 
     public static function update(string $value, array $hash, int $ttl = -1, int $silence_read = -1): bool
     {
+        if (!Config::wasStarted()) {
+            throw new \Exception(
+                Validation::errorMessage(Validation::ERROR_NOT_STARTED)
+            );
+        }
+
         self::ensureInit();
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
         $packed = msgpack_pack($hash);
+        $len = strlen($packed);
 
         $buffer = FFI::new("char[" . strlen($packed) . "]");
         FFI::memcpy($buffer, $packed, strlen($packed));
+        self::$validation->validateHashBytesize($len);
 
-        $was_updated = self::$ffi->__update($value, $buffer, strlen($packed), $ttl, $silence_read);
+        $was_updated = self::$ffi->__update($value, $buffer, $len, $ttl, $silence_read);
         if ($was_updated) {
           self::$cache->insert($value, $hash, $ttl, $silence_read);
         }
@@ -113,6 +129,12 @@ final class CRUD_JT
 
     public static function delete(string $value): bool
     {
+        if (!Config::wasStarted()) {
+            throw new \Exception(
+                Validation::errorMessage(Validation::ERROR_NOT_STARTED)
+            );
+        }
+
         self::ensureInit();
 
         self::$validation->validateToken($value);

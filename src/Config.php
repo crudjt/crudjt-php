@@ -4,20 +4,21 @@ namespace CRUD_JT;
 
 use FFI;
 
+require_once 'validation.php';
+require_once __DIR__ . '/Errors.php';
+
 final class Config
 {
-
     private static ?FFI $ffi = null;
-    private static $settings = [];
-
+    private static array $settings = [];
+    private static bool $wasStarted = false;
 
     private static function init(): void
     {
         if (self::$ffi === null) {
             self::$ffi = FFI::cdef("
-                void __encrypted_key(const char*);
-                void __store_jt_path(const char*);
-            ", self::resolveLibraryPath()); // <--- заміни на свій шлях до dylib
+                const char* start_store_jt(const char* encrypted_key, const char* store_jt_path);
+            ", self::resolveLibraryPath());
         }
     }
 
@@ -30,25 +31,58 @@ final class Config
 
     public static function encrypted_key(string $value): self
     {
+        Validation::validateEncryptedKey($value);
         self::$settings['encrypted_key'] = $value;
         return new self();
     }
 
-    public static function store_jt_path(string $value): self
+    public static function store_jtPath(string $value): self
     {
         self::$settings['store_jt_path'] = $value;
         return new self();
     }
 
+    public static function wasStarted(): bool
+    {
+        return self::$wasStarted;
+    }
+
     public static function start(): void
     {
-        self::ensureInit();
-
-        if (isset(self::$settings['store_jt_path'])) {
-            self::$ffi->__store_jt_path(self::$settings['store_jt_path']);
+        if (!isset(self::$settings['encrypted_key'])) {
+            Errors::raise(
+                Validation::ERROR_ENCRYPTED_KEY_NOT_SET,
+                Validation::errorMessage(Validation::ERROR_ENCRYPTED_KEY_NOT_SET)
+            );
         }
 
-        self::$ffi->__encrypted_key(self::$settings['encrypted_key']);
+        if (self::$wasStarted) {
+            Errors::raise(
+                Validation::ERROR_ALREADY_STARTED,
+                Validation::errorMessage(Validation::ERROR_ALREADY_STARTED)
+            );
+        }
+
+        self::ensureInit();
+
+        $encrypted_key = self::$settings['encrypted_key'];
+        $store_jtPath = self::$settings['store_jt_path'] ?? null;
+
+        $cString = self::$ffi->start_store_jt($encrypted_key, $store_jtPath);
+        $result = json_decode($cString, true);
+
+        if (!is_array($result)) {
+            throw new \RuntimeException("Invalid response from start_store_jt: $json");
+        }
+
+        if (!($result['ok'] ?? false)) {
+            $code = $result['code'];
+            $message = $result['error_message'];
+
+            Errors::raise($code, $message);
+        }
+
+        self::$wasStarted = true;
     }
 
     private static function resolveLibraryPath(): string
