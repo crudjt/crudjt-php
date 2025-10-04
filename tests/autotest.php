@@ -3,7 +3,6 @@
 namespace CRUD_JT\Tests;
 
 use CRUD_JT\CRUD_JT;
-use CRUD_JT\Config;
 
 require __DIR__ . '/../vendor/autoload.php';
 
