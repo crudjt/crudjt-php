@@ -9,6 +9,8 @@ require_once __DIR__ . '/Errors.php';
 
 final class Config
 {
+    const CHEATCODE = 'BAGUVIX'; // 🐰🥚
+
     private static ?FFI $ffi = null;
     private static array $settings = [];
     private static bool $wasStarted = false;
@@ -42,9 +44,20 @@ final class Config
         return new self();
     }
 
+    public static function cheatcode(string $value): self
+    {
+        self::$settings['cheatcode'] = $value;
+        return new self();
+    }
+
     public static function wasStarted(): bool
     {
         return self::$wasStarted;
+    }
+
+    public static function hintCheatcode(): ?string
+    {
+      return self::$settings['cheatcode'] ?? null;
     }
 
     public static function start(): void
@@ -80,6 +93,15 @@ final class Config
             $message = $result['error_message'];
 
             Errors::raise($code, $message);
+        }
+
+        if (self::hintCheatcode() === self::CHEATCODE) {
+            fwrite(STDOUT, <<<MSG
+        🐰🥚 You have activated optional param silence_read for CRUD_JT on method create
+        Ideal for one-time reads, email confirmation links, or limits on the number of operations
+        Each read decrements silence_read by 1, when the counter reaches zero — the token is deleted permanently\n
+        MSG
+            );
         }
 
         self::$wasStarted = true;

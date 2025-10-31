@@ -7,6 +7,7 @@ use CRUD_JT\CRUD_JT;
 require __DIR__ . '/../vendor/autoload.php';
 
 \CRUD_JT\Config::encrypted_key("Cm7B68NWsMNNYjzMDREacmpe5sI1o0g40ZC9w1yQW3WOes7Gm59UsittLOHR2dciYiwmaYq98l3tG8h9yXVCxg==")
+               ::cheatcode(\CRUD_JT\Config::CHEATCODE)
   ->start();
 
 echo "OS: " . PHP_OS . PHP_EOL;

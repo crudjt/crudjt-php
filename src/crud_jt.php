@@ -47,6 +47,10 @@ final class CRUD_JT
             );
         }
 
+        if (Config::hintCheatcode() != Config::CHEATCODE) {
+          $silence_read = -1;
+        }
+
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
 
         $packed = msgpack_pack($hash);
@@ -106,6 +110,10 @@ final class CRUD_JT
             throw new \Exception(
                 Validation::errorMessage(Validation::ERROR_NOT_STARTED)
             );
+        }
+
+        if (Config::hintCheatcode() != Config::CHEATCODE) {
+          $silence_read = -1;
         }
 
         self::ensureInit();
