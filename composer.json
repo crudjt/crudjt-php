@@ -1,5 +1,5 @@
 {
-    "name": "exwarvlad/crud_jt",
+    "name": "exwarvlad/crudjt",
     "type": "library",
     "autoload": {
         "psr-4": {
