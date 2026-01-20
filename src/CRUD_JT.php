@@ -9,6 +9,15 @@ require_once 'cache.php';
 require_once 'validation.php';
 require_once __DIR__ . '/Errors.php';
 
+use Token\TokenServiceClient;
+use Grpc\ChannelCredentials;
+
+use Token\CreateTokenRequest;
+use Token\ReadTokenRequest;
+use Token\UpdateTokenRequest;
+use Token\DeleteTokenRequest;
+
+
 final class CRUD_JT
 {
     private static ?FFI $ffi = null;
@@ -37,7 +46,7 @@ final class CRUD_JT
         }
     }
 
-    public static function create(array $hash, int $ttl = -1, int $silence_read = -1): string
+    public static function original_create(array $hash, int $ttl = -1, int $silence_read = -1): string
     {
         self::ensureInit();
 
@@ -45,10 +54,6 @@ final class CRUD_JT
             throw new \Exception(
                 Validation::errorMessage(Validation::ERROR_NOT_STARTED)
             );
-        }
-
-        if (Config::hintCheatcode() != Config::CHEATCODE) {
-          $silence_read = -1;
         }
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
@@ -70,7 +75,29 @@ final class CRUD_JT
         return $result;
     }
 
-    public static function read(string $value): ?array
+    public static function create(array $hash, int $ttl = -1, int $silence_read = -1): string
+    {
+        self::ensureInit();
+
+        if (Config::master()) {
+          return self::original_create($hash, $ttl, $silence_read);
+        } else {
+          $request = new CreateTokenRequest();
+          $request->setPackedData(msgpack_pack($hash));
+          $request->setTtl($ttl);
+          $request->setSilenceRead($silence_read);
+
+          list($response, $status) = Config::stub()->CreateToken($request)->wait();
+
+          if ($status->code !== \Grpc\STATUS_OK) {
+              die($status->details);
+          }
+
+          return $response->getToken();
+        }
+    }
+
+    public static function original_read(string $value): ?array
     {
         if (!Config::wasStarted()) {
             throw new \Exception(
@@ -104,16 +131,32 @@ final class CRUD_JT
         return $data;
     }
 
-    public static function update(string $value, array $hash, int $ttl = -1, int $silence_read = -1): bool
+    public static function read(string $value): ?array
+    {
+        self::ensureInit();
+
+        if (Config::master()) {
+          return self::original_read($value);
+        } else {
+          $request = new ReadTokenRequest();
+          $request->setToken($value);
+
+          list($response, $status) = Config::stub()->ReadToken($request)->wait();
+
+          if ($status->code !== \Grpc\STATUS_OK) {
+              die($status->details);
+          }
+
+          return msgpack_unpack($response->getPackedData());
+        }
+    }
+
+    public static function original_update(string $value, array $hash, int $ttl = -1, int $silence_read = -1): bool
     {
         if (!Config::wasStarted()) {
             throw new \Exception(
                 Validation::errorMessage(Validation::ERROR_NOT_STARTED)
             );
-        }
-
-        if (Config::hintCheatcode() != Config::CHEATCODE) {
-          $silence_read = -1;
         }
 
         self::ensureInit();
@@ -135,7 +178,30 @@ final class CRUD_JT
         return $was_updated;
     }
 
-    public static function delete(string $value): bool
+    public static function update(string $value, array $hash, int $ttl = -1, int $silence_read = -1): bool
+    {
+      self::ensureInit();
+
+      if (Config::master()) {
+        return self::original_update($value, $hash, $ttl, $silence_read);
+      } else {
+        $request = new UpdateTokenRequest();
+        $request->setToken($value);
+        $request->setPackedData(msgpack_pack($hash));
+        $request->setTtl($ttl);
+        $request->setSilenceRead($silence_read);
+
+        list($response, $status) = Config::stub()->UpdateToken($request)->wait();
+
+        if ($status->code !== \Grpc\STATUS_OK) {
+            die($status->details);
+        }
+
+        return $response->getResult();
+      }
+    }
+
+    public static function original_delete(string $value): bool
     {
         if (!Config::wasStarted()) {
             throw new \Exception(
@@ -150,6 +216,26 @@ final class CRUD_JT
         self::$cache->delete($value);
 
         return self::$ffi->__delete($value);
+    }
+
+    public static function delete(string $value): bool
+    {
+      self::ensureInit();
+
+      if (Config::master()) {
+        return self::original_delete($value);
+      } else {
+        $request = new DeleteTokenRequest();
+        $request->setToken($value);
+
+        list($response, $status) = Config::stub()->DeleteToken($request)->wait();
+
+        if ($status->code !== \Grpc\STATUS_OK) {
+            die($status->details);
+        }
+
+        return $response->getResult();
+      }
     }
 
     private static function resolveLibraryPath(): string

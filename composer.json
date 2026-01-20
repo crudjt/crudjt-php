@@ -3,7 +3,9 @@
     "type": "library",
     "autoload": {
         "psr-4": {
-            "CRUD_JT\\": "src/"
+            "CRUD_JT\\": "src/",
+            "Token\\": "generated/Token/",
+            "GPBMetadata\\": "generated/GPBMetadata/"
         }
     },
     "autoload-dev": {
@@ -16,5 +18,8 @@
             "name": "exwarvlad"
         }
     ],
-    "require": {}
+    "require": {
+        "grpc/grpc": "^1.74",
+        "google/protobuf": "^4.33"
+    }
 }

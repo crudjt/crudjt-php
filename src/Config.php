@@ -7,13 +7,33 @@ use FFI;
 require_once 'validation.php';
 require_once __DIR__ . '/Errors.php';
 
+use Token\TokenServiceClient;
+use Grpc\ChannelCredentials;
+
+use Token\CreateTokenRequest;
+
 final class Config
 {
-    const CHEATCODE = 'BAGUVIX'; // 🐰🥚
-
     private static ?FFI $ffi = null;
-    private static array $settings = [];
     private static bool $wasStarted = false;
+
+
+    private static array $settings = [
+        'grpc_host' => '127.0.0.1',
+        'grpc_port' => 50051,
+        'master' => false,
+    ];
+
+    private static ?TokenServiceClient $stub = null;
+
+    public static function stub(): TokenServiceClient
+    {
+        if (!self::$stub) {
+            throw new RuntimeException('gRPC client not initialized');
+        }
+
+        return self::$stub;
+    }
 
     private static function init(): void
     {
@@ -38,31 +58,19 @@ final class Config
         return new self();
     }
 
-    public static function store_jtPath(string $value): self
-    {
-        self::$settings['store_jt_path'] = $value;
-        return new self();
-    }
-
-    public static function cheatcode(string $value): self
-    {
-        self::$settings['cheatcode'] = $value;
-        return new self();
-    }
-
     public static function wasStarted(): bool
     {
         return self::$wasStarted;
     }
 
-    public static function hintCheatcode(): ?string
+    public static function master(): bool
     {
-      return self::$settings['cheatcode'] ?? null;
+        return self::$settings['master'];
     }
 
-    public static function start(): void
+    public static function startMaster(array $options = []): void
     {
-        if (!isset(self::$settings['encrypted_key'])) {
+        if (!isset($options['encrypted_key'])) {
             Errors::raise(
                 Validation::ERROR_ENCRYPTED_KEY_NOT_SET,
                 Validation::errorMessage(Validation::ERROR_ENCRYPTED_KEY_NOT_SET)
@@ -78,10 +86,9 @@ final class Config
 
         self::ensureInit();
 
-        $encrypted_key = self::$settings['encrypted_key'];
-        $store_jtPath = self::$settings['store_jt_path'] ?? null;
+        self::$settings['store_jt_path'] = $options['store_jt_path'] ?? null;
 
-        $cString = self::$ffi->start_store_jt($encrypted_key, $store_jtPath);
+        $cString = self::$ffi->start_store_jt($options['encrypted_key'], self::$settings['store_jt_path']);
         $result = json_decode($cString, true);
 
         if (!is_array($result)) {
@@ -95,15 +102,39 @@ final class Config
             Errors::raise($code, $message);
         }
 
-        if (self::hintCheatcode() === self::CHEATCODE) {
-            fwrite(STDOUT, <<<MSG
-        🐰🥚 You have activated optional param silence_read for CRUD_JT on method create
-        Ideal for one-time reads, email confirmation links, or limits on the number of operations
-        Each read decrements silence_read by 1, when the counter reaches zero — the token is deleted permanently\n
-        MSG
+        self::$settings['master'] = true;
+        self::$wasStarted = true;
+    }
+
+    public static function connectToMaster(array $options = []): void
+    {
+        if (self::$wasStarted) {
+            Errors::raise(
+                Validation::ERROR_ALREADY_STARTED,
+                Validation::errorMessage(Validation::ERROR_ALREADY_STARTED)
             );
         }
 
+        self::$settings['grpc_host'] = $options['grpc_host']
+            ?? self::$settings['grpc_host'];
+
+        self::$settings['grpc_port'] = $options['grpc_port']
+            ?? self::$settings['grpc_port'];
+
+        $address = sprintf(
+            '%s:%d',
+            self::$settings['grpc_host'],
+            self::$settings['grpc_port']
+        );
+
+        self::$stub = new TokenServiceClient(
+            $address,
+            [
+                'credentials' => ChannelCredentials::createInsecure(),
+            ]
+        );
+
+        self::$settings['master'] = false;
         self::$wasStarted = true;
     }
 
