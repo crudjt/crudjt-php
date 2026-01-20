@@ -3,14 +3,14 @@
     "type": "library",
     "autoload": {
         "psr-4": {
-            "CRUD_JT\\": "src/",
+            "CRUDJT\\": "src/",
             "Token\\": "generated/Token/",
             "GPBMetadata\\": "generated/GPBMetadata/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "CRUD_JT\\Tests\\": "tests/"
+            "CRUDJT\\Tests\\": "tests/"
         }
     },
     "authors": [

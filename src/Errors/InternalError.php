@@ -1,4 +1,4 @@
 <?php
-namespace CRUD_JT\Errors;
+namespace CRUDJT\Errors;
 
 class InternalError extends \Exception {}

@@ -1,6 +1,6 @@
 <?php
 
-namespace CRUD_JT;
+namespace CRUDJT;
 
 class Validation
 {
@@ -13,8 +13,8 @@ class Validation
     public const ERROR_ENCRYPTED_KEY_NOT_SET = 2;
 
     private const ERROR_MESSAGES = [
-        self::ERROR_ALREADY_STARTED => 'CRUD_JT already started',
-        self::ERROR_NOT_STARTED => 'CRUD_JT has not started',
+        self::ERROR_ALREADY_STARTED => 'CRUDJT already started',
+        self::ERROR_NOT_STARTED => 'CRUDJT has not started',
         self::ERROR_ENCRYPTED_KEY_NOT_SET => 'Encrypted key is blank',
     ];
 

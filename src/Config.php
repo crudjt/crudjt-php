@@ -1,6 +1,6 @@
 <?php
 
-namespace CRUD_JT;
+namespace CRUDJT;
 
 use FFI;
 

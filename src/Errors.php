@@ -1,11 +1,11 @@
 <?php
-namespace CRUD_JT;
+namespace CRUDJT;
 
 require_once __DIR__ . '/Errors/InternalError.php';
 require_once __DIR__ . '/Errors/DonateException.php';
 
-use CRUD_JT\Errors\InternalError;
-use CRUD_JT\Errors\DonateException;
+use CRUDJT\Errors\InternalError;
+use CRUDJT\Errors\DonateException;
 
 final class Errors
 {
