@@ -2,16 +2,16 @@
 namespace CRUDJT;
 
 require_once __DIR__ . '/Errors/InternalError.php';
-require_once __DIR__ . '/Errors/DonateException.php';
+require_once __DIR__ . '/Errors/InvalidState.php';
 
 use CRUDJT\Errors\InternalError;
-use CRUDJT\Errors\DonateException;
+use CRUDJT\Errors\InvalidState;
 
 final class Errors
 {
     private const MAP = [
         'XX000' => InternalError::class,
-        'DE000' => DonateException::class
+        '55JT01' => InvalidState::class
     ];
 
     public static function raise(string $code, string $message): void
