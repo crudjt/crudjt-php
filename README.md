@@ -117,11 +117,6 @@ $token = CRUDJT::create(
 # R
 
 ```php
-$result = CRUDJT::read("HBmKFXoXgJ46mCqer1WXyQ");
-// $result == array(1) { ["data"]=> array(2) { ["user_id"]=> int(42) ["role"]=> int(11) } }
-```
-
-```php
 $result = CRUDJT.read('HBmKFXoXgJ46mCqer1WXyQ');
 // result == array(2) { ["metadata"]=> array(2) { ["ttl"]=> int(101001) ["silence_read"]=> int(9) } ["data"]=> array(2) { ["user_id"]=> int(42) ["role"]=> int(11) } }
 ```
@@ -205,6 +200,9 @@ Stored tokens are placed in the **file system** according to the following order
 * CRUDJT **automatically removing expired tokens** after start and every 24 hours without blocking the main thread   
 * **Storage automatically fsyncs every 500ms**, meanwhile tokens ​​are available from cache
 
+# Multi-process Coordination
+For multi-process scenarios, CRUDJT uses gRPC over an insecure local port for same-host communication only. It is not intended for inter-machine or internet-facing usage
+
 # Limits
 The library has the following limits and requirements
 
@@ -222,7 +220,6 @@ The library has the following limits and requirements
 
 - **Custom integrations / new features / collaboration**: support@crudjt.com  
 - **Library support & bug reports:** [open an issue](https://github.com/crudjt/crudjt-php/issues)
-
 
 # Lincense
 CRUDJT is released under the [MIT License](LICENSE.txt)
