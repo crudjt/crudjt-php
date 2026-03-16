@@ -9,6 +9,11 @@ use CRUDJT\CRUDJT;
 
 require __DIR__ . '/../vendor/autoload.php';
 
+if (getenv('CRUDJT_AUTOTEST_ALLOWED') !== 'true') {
+    echo "Denied run autotest for this environment. Set environment CRUDJT_AUTOTEST_ALLOWED = 'true'\n";
+    return;
+}
+
 \CRUDJT\Config::startMaster([
   'secret_key' => 'Cm7B68NWsMNNYjzMDREacmpe5sI1o0g40ZC9w1yQW3WOes7Gm59UsittLOHR2dciYiwmaYq98l3tG8h9yXVCxg=='
 ]);

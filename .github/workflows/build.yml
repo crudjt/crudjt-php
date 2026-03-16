@@ -30,4 +30,6 @@ jobs:
         run: composer install
 
       - name: Run test
+        env:
+          CRUDJT_AUTOTEST_ALLOWED: true
         run: php tests/autotest.php
