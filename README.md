@@ -26,7 +26,7 @@ Optimized for vertical scaling on a single server
 Composer:
 
 ```sh
-composer require crudjt/crudjt-php
+composer require crudjt/crudjt-php:^1.0@beta
 ```
 
 ## Start CRUDJT master (once)
