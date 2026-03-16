@@ -10,7 +10,7 @@ use CRUDJT\CRUDJT;
 require __DIR__ . '/../vendor/autoload.php';
 
 \CRUDJT\Config::startMaster([
-  'encrypted_key' => 'Cm7B68NWsMNNYjzMDREacmpe5sI1o0g40ZC9w1yQW3WOes7Gm59UsittLOHR2dciYiwmaYq98l3tG8h9yXVCxg=='
+  'secret_key' => 'Cm7B68NWsMNNYjzMDREacmpe5sI1o0g40ZC9w1yQW3WOes7Gm59UsittLOHR2dciYiwmaYq98l3tG8h9yXVCxg=='
 ]);
 
 echo "OS: " . PHP_OS . PHP_EOL;
@@ -118,7 +118,7 @@ for ($j = 0; $j < 10; $j++) {
     ];
     $ed_data = ['user_id' => 42, 'role' => 11];
 
-    echo "when creates 40k tokens with Turbo Queue" . PHP_EOL;
+    echo "when creates 40k tokens" . PHP_EOL;
     $start = microtime(true);
     for ($i = 0; $i < REQUESTS; $i++) {
         $tokens[] = CRUDJT::create($data);

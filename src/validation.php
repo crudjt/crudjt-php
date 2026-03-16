@@ -13,12 +13,12 @@ class Validation
 
     public const ERROR_ALREADY_STARTED = 0;
     public const ERROR_NOT_STARTED = 1;
-    public const ERROR_ENCRYPTED_KEY_NOT_SET = 2;
+    public const ERROR_SECRET_KEY_NOT_SET = 2;
 
     private const ERROR_MESSAGES = [
         self::ERROR_ALREADY_STARTED => 'CRUDJT already started',
         self::ERROR_NOT_STARTED => 'CRUDJT has not started',
-        self::ERROR_ENCRYPTED_KEY_NOT_SET => 'Encrypted key is blank',
+        self::ERROR_SECRET_KEY_NOT_SET => 'Secret key is blank',
     ];
 
     public static function errorMessage(int $code): string
@@ -59,17 +59,17 @@ class Validation
         }
     }
 
-    public static function validateEncryptedKey(string $key): bool
+    public static function validateSecretKey(string $key): bool
     {
         $decoded = base64_decode($key, true); // strict decoding
 
         if ($decoded === false) {
-            throw new \InvalidArgumentException("'encrypted_key' must be a valid Base64 string");
+            throw new \InvalidArgumentException("'secret_key' must be a valid Base64 string");
         }
 
         $length = strlen($decoded);
         if (!in_array($length, [32, 48, 64], true)) {
-            throw new \InvalidArgumentException("'encrypted_key' must be exactly 32, 48, or 64 bytes. Got {$length} bytes");
+            throw new \InvalidArgumentException("'secret_key' must be exactly 32, 48, or 64 bytes. Got {$length} bytes");
         }
 
         return true;

@@ -42,7 +42,7 @@ final class Config
     {
         if (self::$ffi === null) {
             self::$ffi = FFI::cdef("
-                const char* start_store_jt(const char* encrypted_key, const char* store_jt_path);
+                const char* start_store_jt(const char* secret_key, const char* store_jt_path);
             ", self::resolveLibraryPath());
         }
     }
@@ -54,10 +54,10 @@ final class Config
         }
     }
 
-    public static function encrypted_key(string $value): self
+    public static function secret_key(string $value): self
     {
-        Validation::validateEncryptedKey($value);
-        self::$settings['encrypted_key'] = $value;
+        Validation::validateSecretKey($value);
+        self::$settings['secret_key'] = $value;
         return new self();
     }
 
@@ -73,10 +73,10 @@ final class Config
 
     public static function startMaster(array $options = []): void
     {
-        if (!isset($options['encrypted_key'])) {
+        if (!isset($options['secret_key'])) {
             Errors::raise(
-                Validation::ERROR_ENCRYPTED_KEY_NOT_SET,
-                Validation::errorMessage(Validation::ERROR_ENCRYPTED_KEY_NOT_SET)
+                Validation::ERROR_SECRET_KEY_NOT_SET,
+                Validation::errorMessage(Validation::ERROR_SECRET_KEY_NOT_SET)
             );
         }
 
@@ -91,7 +91,7 @@ final class Config
 
         self::$settings['store_jt_path'] = $options['store_jt_path'] ?? null;
 
-        $cString = self::$ffi->start_store_jt($options['encrypted_key'], self::$settings['store_jt_path']);
+        $cString = self::$ffi->start_store_jt($options['secret_key'], self::$settings['store_jt_path']);
         $result = json_decode($cString, true);
 
         if (!is_array($result)) {
