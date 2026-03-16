@@ -1,6 +1,8 @@
 {
-    "name": "exwarvlad/crudjt",
+    "name": "crudjt/crudjt-php",
+    "description": "Fast B-tree–backed token store for stateful sessions",
     "type": "library",
+    "license": "MIT",
     "autoload": {
         "psr-4": {
             "CRUDJT\\": "src/",
@@ -15,11 +17,25 @@
     },
     "authors": [
         {
-            "name": "exwarvlad"
+            "name": "Vlad Akymov (v_akymov)",
+            "role": "Creator"
         }
     ],
     "require": {
         "grpc/grpc": "^1.74",
         "google/protobuf": "^4.33"
-    }
+    },
+    "keywords": [
+      "token",
+      "session",
+      "authentication",
+      "authorization"
+    ],
+    "homepage": "https://github.com/crudjt/crudjt-php",
+    "support": {
+      "issues": "https://github.com/crudjt/crudjt-php/issues",
+      "source": "https://github.com/crudjt/crudjt-php"
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }
