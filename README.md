@@ -43,7 +43,7 @@ Start the CRUDJT master when your application boots
 
 Only **one process** can do this for a **single token storage**  
 
-The master is responsible for session state
+The master is responsible for session state  
 All functions can also be used directly from it
 
 ### Generate a new secret key (terminal)
