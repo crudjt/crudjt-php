@@ -1,10 +1,11 @@
 <p align="center">
-  <img src="logos/crud_jt_logo_black.png#gh-light-mode-only" alt="Logo Light" />
-  <img src="logos/crud_jt_logo.png#gh-dark-mode-only" alt="Logo Dark" />
-</p>
-
-<p align="center">
-  Fast, file-backed JSON token for REST APIs with multi-process support
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logos/crudjt_logo_white_on_dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="logos/crudjt_logo_dark_on_white.svg">
+    <img alt="Shows a dark logo" src="logos/crudjt_logo_dark.png">
+  </picture>
+    </br>
+    Go SDK for the fast, file-backed, scalable JSON token engine
 </p>
 
 <p align="center">
@@ -13,55 +14,55 @@
   </a>
 </p>
 
-## Why?  
-[Escape the JWT trap: predictable login, safe logout](https://medium.com/@CoffeeMainer/jwt-trap-login-logout-under-control-7f4495d6024d)
+> ⚠️ Version 1.0.0-beta — production testing phase   
+> API is stable. Feedback is welcome before the final 1.0.0 release
 
-CRUDJT runs a small local coordinator inside your app.
-One process acts as a leader, all others talk to it
-
-## In short
-
-CRUDJT gives you stateful sessions without JWT pain and without distributed complexity
+Fast B-tree–backed token store for stateful user sessions  
+Provides authentication and authorization across multiple processes  
+Optimized for vertical scaling on a single server  
 
 # Installation
 
-Install via Composer
+Composer:
 
 ```sh
 composer require crudjt/crudjt-php
 ```
 
-## How it works (PHP)
+## Start CRUDJT master (once)
 
 `startMaster()` runs the master in a single PHP process
 
 For multi-process or distributed setups, start the master in  
-[another supported runtime](https://github.com/orgs/Cm7B68NWsMNNYjzMDREacmpe5sI1o0g40ZC9w1y/repositories)  
+[another supported runtime](https://github.com/orgs/crudjt/repositories)  
 and connect from PHP using `connectToMaster()`
 
-## Start CRUDJT master (PHP)
+## Start CRUDJT master
 
 Start the CRUDJT master when your application boots  
 
-Only **one process** should do this  
-The master is responsible for session state
+Only **one process** can do this for a **single token storage**  
 
-### Generate an encrypted key
+The master is responsible for session state
+All functions can also be used directly from it
+
+### Generate a new secret key (terminal)
 
 ```sh
-export CRUDJT_ENCRYPTED_KEY=$(openssl rand -base64 48)
+export CRUDJT_SECRET_KEY=$(openssl rand -base64 48)
 ```
 
+### Start master (php)
 ```php
 use CRUDJT\CRUDJT;
 
 \CRUDJT\Config::startMaster([
-  'encrypted_key' => getenv('CRUDJT_ENCRYPTED_KEY'),
+  'secret_key' => getenv('CRUDJT_SECRET_KEY'),
   'store_jt_path' => 'path/to/local/storage'
 ]);
 ```
 
-The encrypted key must be the same for all processes
+*Important: Use the same `SecretKey` across all sessions. If the key changes, previously stored tokens cannot be decrypted and will return `nil` or `false`*  
 
 ## Connect to an existing CRUDJT master
 
@@ -106,11 +107,11 @@ $token = CRUDJT::create($data, $ttl, $silenceRead);
 ```php
 $data = ['user_id' => 42, 'role' => 11];
 
-// To disable token expiration or read limits, pass `-1`
+// To disable token expiration or read limits, pass `NULL`
 $token = CRUDJT::create(
     $data,
-    -1, // disable TTL
-    -1 // disable read limit
+    NULL, // disable TTL
+    NULL // disable read limit
 );
 ```
 
@@ -132,7 +133,7 @@ $result = CRUDJT.read('HBmKFXoXgJ46mCqer1WXyQ');
 ```php
 $data = ['user_id' => 42, 'role' => 8];
 
-// -1 disables limits
+// NULL disables limits
 $ttl = 600;
 $silenceRead = 100;
 
@@ -159,32 +160,12 @@ $result = CRUDJT::delete("HBmKFXoXgJ46mCqer1WXyQ");
 ```
 
 # Performance
-**40k** requests of **256 bytes** — median over 10 runs  
-ARM64 (Apple M1+), macOS 15.6.1  
-PHP 8.4.12
-
-Measured in the master process (in-process execution)  
-No gRPC, network, or serialization overhead is included
-
-| Function | CRUDJT (PHP) | JWT (PHP) | redis-session-store (Ruby, Rails 8.0.4) |
-|----------|-------|------|------|
-| C        | 0.356 second | 0.294 second ⭐ | 4.057 seconds |
-| R        | `0.016 second` ![Logo Favicon Light](logos/crud_jt_logo_favicon_white.png#gh-light-mode-only) ![Logo Favicon Dark](logos/crud_jt_logo_favicon_black.png#gh-dark-mode-only) | 0.344 second | 7.011 seconds |
-| U        | `0.468 second` ![Logo Favicon Light](logos/crud_jt_logo_favicon_white.png#gh-light-mode-only) ![Logo Favicon Dark](logos/crud_jt_logo_favicon_black.png#gh-dark-mode-only) | X | 3.49 seconds |
-| D        | `0.198 second` ![Logo Favicon Light](logos/crud_jt_logo_favicon_white.png#gh-light-mode-only) ![Logo Favicon Dark](logos/crud_jt_logo_favicon_black.png#gh-dark-mode-only) | X | 6.589 seconds |
-
-[Full benchmark results](https://github.com/exwarvlad/benchmarks)
+> Metrics will be published after 1.0.0-beta GitHub Actions builds
 
 # Storage (File-backed)  
-Backed by a disk-based B-tree for predictable reads, writes, and deletes
 
 ## Disk footprint  
-**40k** tokens of **256 bytes** each — median over 10 creates  
-darwin23, APFS  
-
-`48 MB`  
-
-[Full disk footprint results](https://github.com/Cm7B68NWsMNNYjzMDREacmpe5sI1o0g40ZC9w1y/disk_footprint)
+> Metrics will be published after 1.0.0-beta GitHub Actions builds
 
 ## Path Lookup Order
 Stored tokens are placed in the **file system** according to the following order
@@ -209,13 +190,16 @@ The library has the following limits and requirements
 - **PHP version:** tested with 8.2.30
 - **Supported platforms:** Linux, macOS, Windows (x86_64 / arm64)
 - **Maximum json size per token:** 256 bytes
-- **`encrypted_key` format:** must be Base64
-- **`encrypted_key` size:** must be 32, 48, or 64 bytes
+- **`secret_key` format:** must be Base64
+- **`secret_key` size:** must be 32, 48, or 64 bytes
 
 # Contact & Support
 <p align="center">
-  <img src="logos/crud_jt_logo_favicon_black_160.png#gh-light-mode-only" alt="Visit Light" />
-  <img src="logos/crud_jt_logo_favicon_white_160.png#gh-dark-mode-only" alt="Visit Dark" />
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="logos/crudjt_favicon_160x160_white_on_dark.svg" width=160 height=160>
+    <source media="(prefers-color-scheme: light)" srcset="logos/crudjt_favicon_160x160_dark_on_white.svg" width=160 height=160>
+    <img alt="Shows a dark favicon in light color mode and a white one in dark color mode" src="logos/crudjt_favicon_160x160_white.png" width=160 height=160>
+  </picture>
 </p>
 
 - **Custom integrations / new features / collaboration**: support@crudjt.com  
