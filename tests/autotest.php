@@ -69,7 +69,7 @@ echo "Checking silence_read..." . PHP_EOL;
 
 $data = ['user_id' => 42, 'role' => 11];
 $silence_read = 6;
-$token_with_silence_read = CRUDJT::create($data, -1, $silence_read);
+$token_with_silence_read = CRUDJT::create($data, null, $silence_read);
 
 $expected_silence_read = $silence_read - 1;
 for ($i = 0; $i < $silence_read; $i++) {

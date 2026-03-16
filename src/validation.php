@@ -32,11 +32,11 @@ class Validation
             throw new InvalidArgumentException("Must be an array");
         }
 
-        if ($ttl !== -1 && ($ttl < 1 || $ttl > self::U64_MAX)) {
+        if ($ttl !== null && ($ttl < 1 || $ttl > self::U64_MAX)) {
             throw new InvalidArgumentException("ttl should be greater than 0 and less than 2^64");
         }
 
-        if ($silence_read !== -1 && ($silence_read < 1 || $silence_read > self::U64_MAX)) {
+        if ($silence_read !== null && ($silence_read < 1 || $silence_read > self::U64_MAX)) {
             throw new InvalidArgumentException("silence_read should be greater than 0 and less than 2^64");
         }
     }

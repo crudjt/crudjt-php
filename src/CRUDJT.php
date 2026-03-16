@@ -49,7 +49,7 @@ final class CRUDJT
         }
     }
 
-    public static function original_create(array $hash, int $ttl = -1, int $silence_read = -1): string
+    public static function original_create(array $hash, int $ttl = null, int $silence_read = null): string
     {
         self::ensureInit();
 
@@ -60,6 +60,9 @@ final class CRUDJT
         }
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
+
+        $ttl = $ttl ?: -1;
+        $silence_read = $silence_read ?: -1;
 
         $packed = msgpack_pack($hash);
         $len = strlen($packed);
@@ -78,13 +81,18 @@ final class CRUDJT
         return $result;
     }
 
-    public static function create(array $hash, int $ttl = -1, int $silence_read = -1): string
+    public static function create(array $hash, int $ttl = null, int $silence_read = null): string
     {
         self::ensureInit();
 
         if (Config::master()) {
           return self::original_create($hash, $ttl, $silence_read);
         } else {
+          # token_service.proto expect int64/32 values
+          # it sensative for nil and covert it to 0
+          $ttl = $ttl ?: -1;
+          $silence_read = $silence_read ?: -1;
+          
           $request = new CreateTokenRequest();
           $request->setPackedData(msgpack_pack($hash));
           $request->setTtl($ttl);
@@ -154,7 +162,7 @@ final class CRUDJT
         }
     }
 
-    public static function original_update(string $value, array $hash, int $ttl = -1, int $silence_read = -1): bool
+    public static function original_update(string $value, array $hash, int $ttl = null, int $silence_read = null): bool
     {
         if (!Config::wasStarted()) {
             throw new \Exception(
@@ -165,6 +173,9 @@ final class CRUDJT
         self::ensureInit();
 
         self::$validation->validateInsertion($hash, $ttl, $silence_read);
+
+        $ttl = $ttl ?: -1;
+        $silence_read = $silence_read ?: -1;
 
         $packed = msgpack_pack($hash);
         $len = strlen($packed);
@@ -181,13 +192,18 @@ final class CRUDJT
         return $was_updated;
     }
 
-    public static function update(string $value, array $hash, int $ttl = -1, int $silence_read = -1): bool
+    public static function update(string $value, array $hash, int $ttl = null, int $silence_read = null): bool
     {
       self::ensureInit();
 
       if (Config::master()) {
         return self::original_update($value, $hash, $ttl, $silence_read);
       } else {
+        # token_service.proto expect int64/32 values
+        # it sensative for nil and covert it to 0
+        $ttl = $ttl ?: -1;
+        $silence_read = $silence_read ?: -1;
+
         $request = new UpdateTokenRequest();
         $request->setToken($value);
         $request->setPackedData(msgpack_pack($hash));

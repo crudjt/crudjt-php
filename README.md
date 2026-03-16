@@ -105,13 +105,11 @@ $token = CRUDJT::create($data, $ttl, $silenceRead);
 ```
 
 ```php
-$data = ['user_id' => 42, 'role' => 11];
-
-// To disable token expiration or read limits, pass `NULL`
+// To disable token expiration or read limits, pass `null`
 $token = CRUDJT::create(
-    $data,
-    NULL, // disable TTL
-    NULL // disable read limit
+    ['user_id' => 42, 'role' => 11],
+    null, // disable TTL
+    null // disable read limit
 );
 ```
 
@@ -132,8 +130,7 @@ $result = CRUDJT.read('HBmKFXoXgJ46mCqer1WXyQ');
 
 ```php
 $data = ['user_id' => 42, 'role' => 8];
-
-// NULL disables limits
+// `null` disables limits
 $ttl = 600;
 $silenceRead = 100;
 
