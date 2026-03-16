@@ -5,7 +5,7 @@
     <img alt="Shows a dark logo" src="logos/crudjt_logo_dark.png">
   </picture>
     </br>
-    Go SDK for the fast, file-backed, scalable JSON token engine
+    PHP SDK for the fast, file-backed, scalable JSON token engine
 </p>
 
 <p align="center">
