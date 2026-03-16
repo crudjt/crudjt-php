@@ -185,7 +185,7 @@ For multi-process scenarios, CRUDJT uses gRPC over an insecure local port for sa
 The library has the following limits and requirements
 
 - **PHP version:** tested with 8.2.30
-- **Supported platforms:** Linux, macOS, Windows (x86_64 / arm64)
+- **Supported platforms:** Linux, macOS (x86_64 / arm64). Windows (experimental, x86_64 / arm64)
 - **Maximum json size per token:** 256 bytes
 - **`secret_key` format:** must be Base64
 - **`secret_key` size:** must be 32, 48, or 64 bytes

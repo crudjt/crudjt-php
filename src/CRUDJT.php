@@ -92,7 +92,7 @@ final class CRUDJT
           # it sensative for nil and covert it to 0
           $ttl = $ttl ?: -1;
           $silence_read = $silence_read ?: -1;
-          
+
           $request = new CreateTokenRequest();
           $request->setPackedData(msgpack_pack($hash));
           $request->setTtl($ttl);
@@ -264,8 +264,8 @@ final class CRUDJT
 
         $osMap = [
             'Windows' => 'windows',
-            'Darwin'  => 'macos',
-            'Linux'   => 'linux',
+            'Darwin' => 'macos',
+            'Linux' => 'linux',
         ];
 
         $archMap = [
