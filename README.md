@@ -2,7 +2,7 @@
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="logos/crudjt_logo_white_on_dark.svg">
     <source media="(prefers-color-scheme: light)" srcset="logos/crudjt_logo_dark_on_white.svg">
-    <img alt="Shows a dark logo" src="logos/crudjt_logo_white_on_dark.svg">
+    <img alt="Shows a dark logo" src="logos/crudjt_logo_white_on_dark.svg" width=838 height=165>
   </picture>
     </br>
     PHP SDK for the fast, file-backed, scalable JSON token engine
