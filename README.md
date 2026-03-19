@@ -66,7 +66,7 @@ use CRUDJT\CRUDJT;
 ]);
 ```
 
-*Important: Use the same `secret_key` across all sessions. If the key changes, previously stored tokens cannot be decrypted and will return `nil` or `false`*  
+*Important: Use the same `secret_key` across all sessions. If the key changes, previously stored tokens cannot be decrypted and will return `null` or `false`*  
 
 ## Connect to an existing CRUDJT master
 
