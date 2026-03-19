@@ -54,6 +54,10 @@ export CRUDJT_SECRET_KEY=$(openssl rand -base64 48)
 
 ### Start master (php)
 ```php
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
+
 use CRUDJT\CRUDJT;
 
 \CRUDJT\Config::startMaster([
@@ -74,7 +78,9 @@ Typical examples:
 - forked processes
 
 ```php
-use CRUDJT\CRUDJT;
+<?php
+
+require __DIR__ . '/vendor/autoload.php';
 
 CRUDJT.Config.connectToMaster([
   'grpc_host' => '127.0.0.1', // default
