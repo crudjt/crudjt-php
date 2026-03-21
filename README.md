@@ -36,7 +36,7 @@ composer require crudjt/crudjt-php:^1.0@beta
 For multi-process or distributed setups, start the master in  
 [another supported runtime](https://github.com/crudjt/crudjt?tab=readme-ov-file#getting-started)  
 and connect from PHP using `connectToMaster()`
-or jump to [Start CRUDJT master in Docker](https://github.com/crudjt/crudjt-php?tab=readme-ov-file#start-crudjt-master-in-docker)
+or jump to [Start CRUDJT master in Docker](#start-crudjt-master-in-docker)
 
 ## Start CRUDJT master
 
