@@ -34,8 +34,9 @@ composer require crudjt/crudjt-php:^1.0@beta
 `startMaster()` runs the master in a single PHP process
 
 For multi-process or distributed setups, start the master in  
-[another supported runtime](https://github.com/orgs/crudjt/repositories)  
+[another supported runtime](https://github.com/crudjt/crudjt?tab=readme-ov-file#getting-started)  
 and connect from PHP using `connectToMaster()`
+or jump to [Start CRUDJT master in Docker](https://github.com/crudjt/crudjt-php?tab=readme-ov-file#start-crudjt-master-in-docker)
 
 ## Start CRUDJT master
 
@@ -67,6 +68,36 @@ use CRUDJT\CRUDJT;
 ```
 
 *Important: Use the same `secret_key` across all sessions. If the key changes, previously stored tokens cannot be decrypted and will return `null` or `false`*  
+
+## Start CRUDJT master in Docker
+
+Create a `docker-compose.yml` file:
+
+```yml
+services:
+  crudjt-server:
+    image: coffeemainer/crudjt-server:beta
+    restart: unless-stopped
+
+    ports:
+      - "${CRUDJT_CLIENT_PORT:-50051}:50051"
+
+    volumes:
+      - "${STORE_JT:-./store_jt}:/app/store_jt"
+      - "${CRUDJT_SECRETS:-./crudjt_secrets}:/app/secrets"
+
+    environment:
+      CRUDJT_DOCKER_HOST: 0.0.0.0
+      CRUDJT_DOCKER_PORT: 50051
+```
+Start the server:
+```bash
+docker-compose up -d
+```
+*Ensure the secrets directory contains your secret key file at `./crudjt_secrets/secret_key.txt`*
+
+For configuration details and image versions, see the
+[CRUDJT Server on Docker Hub](https://hub.docker.com/r/coffeemainer/crudjt-server)
 
 ## Connect to an existing CRUDJT master
 
